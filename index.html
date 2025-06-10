@@ -1,144 +1,128 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ProCodevs Earning</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ProCodevs Earning</title>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-  <style>
-    /* Reset */
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0; padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f0f2f5;
-      color: #333;
-    }
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    margin: 0; padding: 0;
+    background: #f7f7f7;
+    color: #333;
+  }
+  .container {
+    max-width: 420px;
+    margin: 40px auto;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 15px #ccc;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    color: #007bff;
+  }
+  button {
+    cursor: pointer;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    background: #007bff;
+    color: white;
+    margin: 10px 0;
+  }
+  button:hover {
+    background: #0056b3;
+  }
+  input, select {
+    width: 100%;
+    padding: 8px 12px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+  }
+  .hidden {
+    display: none;
+  }
+  .wallet-info {
+    margin: 10px 0;
+    font-weight: bold;
+  }
+  .alert {
+    background: #ffdddd;
+    color: #a94442;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  /* Responsive */
+  @media (max-width: 480px) {
     .container {
-      max-width: 400px;
-      margin: 30px auto;
-      background: white;
-      padding: 25px 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgb(0 0 0 / 0.1);
+      margin: 20px;
+      padding: 15px;
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #0d6efd;
+    h1 {
+      font-size: 24px;
     }
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #0d6efd;
-      color: white;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      margin-top: 15px;
-    }
-    button:hover:not(:disabled) {
-      background-color: #094db1;
-    }
-    button:disabled {
-      background-color: #7a94c6;
-      cursor: not-allowed;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: 600;
-    }
-    input[type="text"],
-    input[type="number"] {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 15px;
-    }
-    #userInfo {
-      text-align: center;
-      margin-bottom: 15px;
-    }
-    .wallet-info {
-      font-size: 18px;
-      margin-top: 10px;
-      font-weight: 600;
-      text-align: center;
-    }
-    .ads-container {
-      margin: 25px 0;
-      text-align: center;
-    }
-    /* Responsive */
-    @media (max-width: 480px) {
-      .container {
-        margin: 15px;
-        padding: 20px 15px;
-      }
-      button {
-        font-size: 14px;
-        padding: 10px;
-      }
-    }
-  </style>
+  }
+</style>
+
 </head>
 <body>
+<div class="container">
 
-  <div class="container">
-    <h2>ProCodevs Earning</h2>
+  <h1>ProCodevs Earning</h1>
 
-    <!-- Login Button -->
-    <div id="loginDiv">
-      <button id="loginBtn">Login with Google</button>
-    </div>
+  <div id="loginDiv">
+    <button id="googleLoginBtn">Google Login</button>
+  </div>
 
-    <!-- User Area -->
-    <div id="userArea" style="display:none;">
-      <div id="userInfo"></div>
-      <div class="wallet-info">
-        Points: <span id="walletPoints">0</span>
-      </div>
+  <div id="userArea" class="hidden">
+    <p>স্বাগতম, <span id="userName"></span>!</p>
+    <p class="wallet-info">তোমার পয়েন্ট: <span id="pointsDisplay">0</span></p>
+    
+    <h3>Redeem Request করুন</h3>
+    <form id="redeemForm">
+      <label for="bkashNumber">বিকাশ নম্বর (Bkash Number):</label>
+      <input type="text" id="bkashNumber" placeholder="০১XXXXXXXXX" pattern="[0-9]{11}" required />
+      
+      <label for="redeemPoints">রিডিম পয়েন্ট (কমপক্ষে ১০,০০০):</label>
+      <input type="number" id="redeemPoints" min="10000" placeholder="১০,০০০ পয়েন্ট" required />
+      
+      <button type="submit">রিডিম করুন</button>
+    </form>
+    <button id="logoutBtn" style="background:#dc3545; margin-top:15px;">Logout</button>
+  </div>
 
-      <button id="spinBtn">Spin & Earn Points</button>
+  <div id="messageBox" class="alert hidden"></div>
 
-      <label for="bkashNumber">Bkash Number</label>
-      <input type="text" id="bkashNumber" placeholder="01XXXXXXXXX" />
-
-      <label for="redeemPoints">Points to Redeem (Min 10000)</label>
-      <input type="number" id="redeemPoints" placeholder="10000" min="10000" />
-
-      <button id="redeemBtn">Submit Redeem Request</button>
-
-      <button id="logoutBtn" style="margin-top: 30px; background-color: #dc3545;">Logout</button>
-    </div>
-
-    <!-- Ads Placeholder -->
-    <div class="ads-container">
-      <!-- Replace with your actual ad code -->
-      <iframe src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" style="width:320px; height:100px; border:none;"></iframe>
-      <p style="font-size: 12px; color: gray;">Advertisement</p>
+  <hr />
+  <div>
+    <!-- Placeholder Ads -->
+    <div style="margin: 20px 0; text-align:center; background:#eee; padding:10px; border-radius:6px;">
+      এখানে আপনার Ad কোড দিন
     </div>
   </div>
 
+</div>
+
 <script>
-  // Your Firebase configuration
+  // Firebase Config (নিজের Firebase Console থেকে কপি করে বসান)
   const firebaseConfig = {
     apiKey: "AIzaSyBfY-Dtfu1mus3uqTCwHkGLVGO9EeswQRo",
     authDomain: "procodevsearning.firebaseapp.com",
     projectId: "procodevsearning",
-    storageBucket: "procodevsearning.firebasestorage.app",
+    storageBucket: "procodevsearning.appspot.com",
     messagingSenderId: "749186018659",
     appId: "1:749186018659:web:15c0e370a8b5566f2b7756",
     measurementId: "G-YS3DZTHNG3"
@@ -149,105 +133,86 @@
   const auth = firebase.auth();
   const db = firebase.firestore();
 
-  // UI Elements
+  // DOM Elements
   const loginDiv = document.getElementById('loginDiv');
+  const googleLoginBtn = document.getElementById('googleLoginBtn');
   const userArea = document.getElementById('userArea');
-  const loginBtn = document.getElementById('loginBtn');
+  const userName = document.getElementById('userName');
+  const pointsDisplay = document.getElementById('pointsDisplay');
+  const redeemForm = document.getElementById('redeemForm');
+  const bkashNumber = document.getElementById('bkashNumber');
+  const redeemPoints = document.getElementById('redeemPoints');
   const logoutBtn = document.getElementById('logoutBtn');
-  const userInfo = document.getElementById('userInfo');
-  const walletPoints = document.getElementById('walletPoints');
-  const spinBtn = document.getElementById('spinBtn');
-  const redeemBtn = document.getElementById('redeemBtn');
+  const messageBox = document.getElementById('messageBox');
 
   let currentUser = null;
 
-  // Login function
-  loginBtn.onclick = () => {
+  // Show message
+  function showMessage(msg, isError = false) {
+    messageBox.textContent = msg;
+    messageBox.style.display = 'block';
+    messageBox.style.background = isError ? '#ffdddd' : '#ddffdd';
+    messageBox.style.color = isError ? '#a94442' : '#2b662b';
+    setTimeout(() => {
+      messageBox.style.display = 'none';
+    }, 4000);
+  }
+
+  // Login with Google
+  googleLoginBtn.addEventListener('click', () => {
     const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider)
-      .then(result => {
-        currentUser = result.user;
-        showUserArea();
-      })
-      .catch(err => alert("Login Failed: " + err.message));
-  };
-
-  // Logout function
-  logoutBtn.onclick = () => {
-    auth.signOut().then(() => {
-      currentUser = null;
-      loginDiv.style.display = 'block';
-      userArea.style.display = 'none';
+    auth.signInWithPopup(provider).catch(err => {
+      showMessage("Login Error: " + err.message, true);
     });
-  };
+  });
 
-  // Show user info area and load wallet
-  function showUserArea() {
-    loginDiv.style.display = 'none';
-    userArea.style.display = 'block';
-    userInfo.innerHTML = `<p>Welcome, <b>${currentUser.displayName}</b><br>${currentUser.email}</p>`;
-    loadWalletPoints();
-  }
+  // Logout
+  logoutBtn.addEventListener('click', () => {
+    auth.signOut();
+  });
 
-  // Load wallet points from Firestore
+  // Load wallet points
   function loadWalletPoints() {
+    if (!currentUser) return;
     const walletRef = db.collection('wallets').doc(currentUser.uid);
     walletRef.get().then(doc => {
-      if (doc.exists) {
-        walletPoints.textContent = doc.data().points || 0;
-      } else {
-        walletRef.set({ points: 0 });
-        walletPoints.textContent = 0;
-      }
+      let points = 0;
+      if (doc.exists) points = doc.data().points || 0;
+      pointsDisplay.textContent = points;
+    }).catch(err => {
+      showMessage("Error loading points: " + err.message, true);
     });
   }
 
-  // Spin to earn points
-  spinBtn.onclick = () => {
-    spinBtn.disabled = true;
-    let earnedPoints = Math.floor(Math.random() * 21) + 5; // 5 to 25 points
-
-    const walletRef = db.collection('wallets').doc(currentUser.uid);
-    walletRef.get().then(doc => {
-      let currentPoints = doc.exists ? doc.data().points : 0;
-      let updatedPoints = currentPoints + earnedPoints;
-      walletRef.set({ points: updatedPoints })
-        .then(() => {
-          walletPoints.textContent = updatedPoints;
-          alert(`Congrats! You earned ${earnedPoints} points.`);
-          spinBtn.disabled = false;
-        })
-        .catch(err => {
-          alert("Error updating points: " + err.message);
-          spinBtn.disabled = false;
-        });
-    });
-  };
-
-  // Redeem request submission
-  redeemBtn.onclick = () => {
-    const bkashNum = document.getElementById('bkashNumber').value.trim();
-    const pointsToRedeem = parseInt(document.getElementById('redeemPoints').value);
-
-    if (!/^01[3-9]\d{8}$/.test(bkashNum)) {
-      alert("Please enter a valid Bkash number starting with 01");
-      return;
-    }
-    if (isNaN(pointsToRedeem) || pointsToRedeem < 10000) {
-      alert("Please enter a valid redeem amount of at least 10000 points");
+  // Redeem form submit
+  redeemForm.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!currentUser) {
+      showMessage("Login করুন রিডিম করার জন্য", true);
       return;
     }
 
-    // Check if user has enough points
+    const bkashNum = bkashNumber.value.trim();
+    const pointsToRedeem = parseInt(redeemPoints.value);
+
+    if (!/^\d{11}$/.test(bkashNum)) {
+      showMessage("বিকাশ নম্বর সঠিক নয় (১১ সংখ্যার হতে হবে)", true);
+      return;
+    }
+    if (pointsToRedeem < 10000) {
+      showMessage("রিডিম পয়েন্ট কমপক্ষে ১০,০০০ হতে হবে", true);
+      return;
+    }
+
+    // Check points balance & submit redeem request
     const walletRef = db.collection('wallets').doc(currentUser.uid);
     walletRef.get().then(doc => {
-      const currentPoints = doc.exists ? doc.data().points : 0;
+      const currentPoints = doc.exists ? doc.data().points || 0 : 0;
       if (currentPoints < pointsToRedeem) {
-        alert("Insufficient points to redeem");
+        showMessage("পয়েন্ট যথেষ্ট নেই রিডিম করার জন্য", true);
         return;
       }
-
-      // Add redeem request to Firestore
+      // Add redeem request
       db.collection('redeemRequests').add({
         uid: currentUser.uid,
         name: currentUser.displayName,
@@ -257,24 +222,25 @@
         status: 'pending',
         requestedAt: firebase.firestore.FieldValue.serverTimestamp()
       }).then(() => {
-        // Deduct points from wallet
+        // Deduct points
         walletRef.set({ points: currentPoints - pointsToRedeem });
-        alert("Redeem request submitted successfully!");
-        // Clear form
-        document.getElementById('bkashNumber').value = '';
-        document.getElementById('redeemPoints').value = '';
+        showMessage("রিডিম রিকোয়েস্ট সফল হয়েছে!");
+        redeemForm.reset();
         loadWalletPoints();
       }).catch(err => {
-        alert("Error submitting redeem request: " + err.message);
+        showMessage("রিকোয়েস্ট জমা দিতে সমস্যা: " + err.message, true);
       });
     });
-  };
+  });
 
   // Auth state listener
   auth.onAuthStateChanged(user => {
     if (user) {
       currentUser = user;
-      showUserArea();
+      loginDiv.style.display = 'none';
+      userArea.style.display = 'block';
+      userName.textContent = user.displayName || "User";
+      loadWalletPoints();
     } else {
       currentUser = null;
       loginDiv.style.display = 'block';
