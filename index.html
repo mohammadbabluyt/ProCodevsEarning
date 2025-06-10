@@ -1,208 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ProCodevs Earning - Spin & Earn</title>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js"></script>
-<style>
-  /* Basic CSS for layout */
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProCodevs Earning</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; }
+    .container { max-width: 500px; margin: auto; padding: 20px; background: #fff; margin-top: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    h2 { text-align: center; }
+    .btn { padding: 10px 20px; background: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+    .btn:disabled { background: #999; }
+    .field { margin-bottom: 10px; }
+    label { display: block; margin-bottom: 5px; }
+    input[type="text"], input[type="number"] { width: 100%; padding: 8px; }
+    #userInfo { margin-top: 10px; text-align: center; }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h2>ProCodevs Earning</h2>
+    <div id="loginDiv">
+      <button class="btn" onclick="loginWithGoogle()">Login with Google</button>
+    </div>
+    <div id="userArea" style="display:none;">
+      <div id="userInfo"></div>
+      <h3>Your Wallet</h3>
+      <p>Points: <span id="walletPoints">0</span></p>
+      <button class="btn" onclick="spinWheel()">Spin and Earn</button>
 
-<h1>ProCodevs Earning - Spin & Earn</h1>
+      <h3>Redeem</h3>
+      <div class="field">
+        <label for="bkash">Bkash Number</label>
+        <input type="text" id="bkash" placeholder="01XXXXXXXXX">
+      </div>
+      <div class="field">
+        <label for="redeemPoints">Points to Redeem</label>
+        <input type="number" id="redeemPoints" placeholder="Minimum 10000">
+      </div>
+      <button class="btn" onclick="redeemRequest()">Submit Request</button>
 
-<button id="loginBtn">Login with Google</button>
-<div id="userInfo" style="display:none;">
-  <p id="welcomeMsg"></p>
-  <button id="logoutBtn">Logout</button>
-</div>
+      <br/><br/>
+      <button class="btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
 
-<div id="spinArea" style="display:none;">
-  <!-- Spin Wheel placeholder -->
-  <button id="spinBtn">Spin the Wheel</button>
-  <p>Your Points: <span id="points">0</span></p>
-</div>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBfY-Dtfu1mus3uqTCwHkGLVGO9EeswQRo",
+      authDomain: "procodevsearning.firebaseapp.com",
+      projectId: "procodevsearning",
+      storageBucket: "procodevsearning.firebasestorage.app",
+      messagingSenderId: "749186018659",
+      appId: "1:749186018659:web:15c0e370a8b5566f2b7756",
+      measurementId: "G-YS3DZTHNG3"
+    };
 
-<div id="redeemArea" style="display:none;">
-  <h2>Redeem Points</h2>
-  <form id="redeemForm">
-    <input type="text" id="paymentNumber" placeholder="Your Bkash/Nagad Number" required />
-    <input type="number" id="redeemPoints" placeholder="Points to Redeem (min 10000)" required min="10000" />
-    <button type="submit">Submit Redeem Request</button>
-  </form>
-</div>
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-<!-- Ads Scripts -->
-<script type="text/javascript">
-	atOptions = {
-		'key' : 'fd82e7566af7915ade988007cb3fa5fb',
-		'format' : 'iframe',
-		'height' : 90,
-		'width' : 728,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/fd82e7566af7915ade988007cb3fa5fb/invoke.js"></script>
+    const loginDiv = document.getElementById("loginDiv");
+    const userArea = document.getElementById("userArea");
+    const userInfo = document.getElementById("userInfo");
+    const walletPoints = document.getElementById("walletPoints");
 
-<script type='text/javascript' src='//pl24559157.profitableratecpm.com/cf/64/ac/cf64ac9f810e84afe4a1d009a2825fad.js'></script>
+    let currentUser = null;
 
-<script type='text/javascript' src='//pl24559032.profitableratecpm.com/37/43/f3/3743f3003465a7256bf0ccbce89b4b08.js'></script>
+    function loginWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          currentUser = result.user;
+          showUserArea();
+        })
+        .catch((error) => alert(error.message));
+    }
 
-<script>
-  // Firebase initialization
-  const firebaseConfig = {
-    apiKey: "AIzaSyBfY-Dtfu1mus3uqTCwHkGLVGO9EeswQRo",
-    authDomain: "procodevsearning.firebaseapp.com",
-    projectId: "procodevsearning",
-    storageBucket: "procodevsearning.firebasestorage.app",
-    messagingSenderId: "749186018659",
-    appId: "1:749186018659:web:15c0e370a8b5566f2b7756",
-    measurementId: "G-YS3DZTHNG3"
-  };
+    function showUserArea() {
+      loginDiv.style.display = "none";
+      userArea.style.display = "block";
+      userInfo.innerHTML = `<p>Welcome, ${currentUser.displayName}<br/>(${currentUser.email})</p>`;
+      getWalletPoints();
+    }
 
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  const loginBtn = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const userInfo = document.getElementById('userInfo');
-  const welcomeMsg = document.getElementById('welcomeMsg');
-  const spinArea = document.getElementById('spinArea');
-  const pointsSpan = document.getElementById('points');
-  const redeemArea = document.getElementById('redeemArea');
-  const redeemForm = document.getElementById('redeemForm');
-
-  let currentUser = null;
-
-  loginBtn.onclick = () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider)
-      .then((result) => {
-        currentUser = result.user;
-        welcomeMsg.textContent = `Welcome, ${currentUser.displayName}`;
-        loginBtn.style.display = 'none';
-        userInfo.style.display = 'block';
-        spinArea.style.display = 'block';
-        redeemArea.style.display = 'block';
-        loadUserPoints();
-      })
-      .catch((error) => {
-        alert('Login Failed: ' + error.message);
-      });
-  };
-
-  logoutBtn.onclick = () => {
-    auth.signOut().then(() => {
-      currentUser = null;
-      loginBtn.style.display = 'block';
-      userInfo.style.display = 'none';
-      spinArea.style.display = 'none';
-      redeemArea.style.display = 'none';
-    });
-  };
-
-  function loadUserPoints() {
-    if (!currentUser) return;
-    db.collection('users').doc(currentUser.uid).get()
-      .then(doc => {
+    function getWalletPoints() {
+      const docRef = db.collection("wallets").doc(currentUser.uid);
+      docRef.get().then((doc) => {
         if (doc.exists) {
-          pointsSpan.textContent = doc.data().points || 0;
+          walletPoints.innerText = doc.data().points || 0;
         } else {
-          // New user, create document
-          db.collection('users').doc(currentUser.uid).set({points: 0});
-          pointsSpan.textContent = 0;
-        }
-      })
-      .catch(err => {
-        console.error('Error getting points:', err);
-      });
-  }
-
-  // Spin Button Logic (simplified random points)
-  document.getElementById('spinBtn').onclick = () => {
-    if (!currentUser) {
-      alert('Please login first!');
-      return;
-    }
-    // Check daily spin limit here (implement later)
-    const possiblePoints = [0, 5, 10, 20, 50, 100];
-    const wonPoints = possiblePoints[Math.floor(Math.random() * possiblePoints.length)];
-    
-    // Update points in Firestore
-    const userRef = db.collection('users').doc(currentUser.uid);
-    db.runTransaction(transaction => {
-      return transaction.get(userRef).then(doc => {
-        if (!doc.exists) {
-          transaction.set(userRef, {points: wonPoints});
-        } else {
-          const newPoints = (doc.data().points || 0) + wonPoints;
-          transaction.update(userRef, {points: newPoints});
+          docRef.set({ points: 0 });
+          walletPoints.innerText = 0;
         }
       });
-    }).then(() => {
-      alert(`You won ${wonPoints} points!`);
-      loadUserPoints();
-    }).catch(err => {
-      console.error('Transaction failed: ', err);
-    });
-  };
-
-  // Redeem form submission
-  redeemForm.onsubmit = (e) => {
-    e.preventDefault();
-    if (!currentUser) {
-      alert('Login first to redeem points');
-      return;
-    }
-    const paymentNumber = document.getElementById('paymentNumber').value.trim();
-    const redeemPoints = parseInt(document.getElementById('redeemPoints').value);
-    if (redeemPoints < 10000) {
-      alert('Minimum redeem is 10,000 points');
-      return;
     }
 
-    // Check if user has enough points
-    db.collection('users').doc(currentUser.uid).get().then(doc => {
-      if (doc.exists && (doc.data().points || 0) >= redeemPoints) {
-        // Deduct points and add redeem request
-        const userRef = db.collection('users').doc(currentUser.uid);
-        const redeemRef = db.collection('redeem_requests');
+    function spinWheel() {
+      const pointsEarned = Math.floor(Math.random() * 20) + 5; // Earn 5-25 points
+      const docRef = db.collection("wallets").doc(currentUser.uid);
+      docRef.get().then((doc) => {
+        const current = doc.data()?.points || 0;
+        const updated = current + pointsEarned;
+        docRef.set({ points: updated });
+        walletPoints.innerText = updated;
+        alert(`You earned ${pointsEarned} points!`);
+      });
+    }
 
-        db.runTransaction(transaction => {
-          return transaction.get(userRef).then(userDoc => {
-            if (!userDoc.exists) throw "User document missing";
-            const currentPoints = userDoc.data().points || 0;
-            if (currentPoints < redeemPoints) throw "Insufficient points";
+    function redeemRequest() {
+      const number = document.getElementById("bkash").value;
+      const redeemPoints = parseInt(document.getElementById("redeemPoints").value);
 
-            transaction.update(userRef, {points: currentPoints - redeemPoints});
-            transaction.set(redeemRef.doc(), {
-              uid: currentUser.uid,
-              userName: currentUser.displayName,
-              email: currentUser.email,
-              paymentNumber: paymentNumber,
-              points: redeemPoints,
-              requestedAt: new Date()
-            });
-          });
-        }).then(() => {
-          alert('Redeem request sent! We will process soon.');
-          redeemForm.reset();
-          loadUserPoints();
-        }).catch(error => {
-          alert('Redeem failed: ' + error);
-        });
-      } else {
-        alert('Not enough points to redeem');
+      if (!number || redeemPoints < 10000) {
+        alert("Enter valid Bkash number and minimum 10000 points");
+        return;
+      }
+
+      db.collection("redeem_requests").add({
+        userId: currentUser.uid,
+        userName: currentUser.displayName,
+        email: currentUser.email,
+        paymentNumber: number,
+        points: redeemPoints,
+        requestedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        alert("Redeem request submitted successfully!");
+      }).catch((err) => alert("Error: " + err.message));
+    }
+
+    function logout() {
+      auth.signOut().then(() => {
+        currentUser = null;
+        userArea.style.display = "none";
+        loginDiv.style.display = "block";
+      });
+    }
+
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        currentUser = user;
+        showUserArea();
       }
     });
-  };
-</script>
-
+  </script>
 </body>
 </html>
